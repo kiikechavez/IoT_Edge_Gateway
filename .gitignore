@@ -1,0 +1,58 @@
+# Build outputs
+build/
+build-*/
+*.uf2
+*.elf
+*.elf.map
+*.hex
+*.bin
+*.dis
+README2.md
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+*.sh
+INSTRUCCIONES_ENTREGA.md
+Makefile
+*.cmake.in
+compile_commands.json
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Python / Django
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.env
+venv/
+db.sqlite3
+db.sqlite3-journal
+backend/staticfiles/
+backend/media/
+local_settings.py
+
+# Logs y datos de prueba
+*.log
+*.csv.bak
+telemetry.csv
+firmware.log
+
+# Latex
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+*.sh
