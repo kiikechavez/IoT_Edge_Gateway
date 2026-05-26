@@ -1,0 +1,19 @@
+item,componente,cantidad,descripcion,referencia,costo_unitario_cop,costo_total_cop,proveedor_sugerido,enlace
+1,Raspberry Pi Pico W,1,MCU RP2040 (dual Cortex-M0+) + WiFi CYW43439,RP2040,35000,35000,Didacticas Electronicas / SIGMA / IngeBotica,https://www.didacticaselectronicas.com/
+2,Modulo transceptor RS-485,1,Modulo basado en MAX485/SP485 con 4 pines digitales DI/RO/DE/RE,MAX485-MOD,5000,5000,Didacticas Electronicas / SIGMA,https://www.didacticaselectronicas.com/
+3,Pantalla OLED 0.96 pulgadas I2C,1,OLED monocromo 128x64 driver SSD1306 con 4 pines (VCC GND SCL SDA),SSD1306-OLED,12000,12000,Didacticas Electronicas / SIGMA,https://www.didacticaselectronicas.com/
+4,Modulo lector MicroSD SPI,1,Lector con level shifter integrado 3.3V/5V para bus SPI,MICROSD-SPI,6000,6000,Didacticas Electronicas / SIGMA,https://www.didacticaselectronicas.com/
+5,Memoria MicroSD,1,Tarjeta MicroSD clase 10 de 8GB minimo (formato FAT32),SDHC-8GB,15000,15000,Cualquier tienda de informatica,
+6,Ventilador DC 5V,1,Ventilador axial 40x40x10mm o 30x30x10mm de 5V con 2 pines,FAN-5V-40MM,5000,5000,Didacticas Electronicas / SIGMA,https://www.didacticaselectronicas.com/
+7,Transistor MOSFET canal N logic-level,1,IRLZ44N (VGS_th < 2V) o 2N7000 para corrientes bajas,IRLZ44N,3000,3000,Didacticas Electronicas / SIGMA,https://www.didacticaselectronicas.com/
+8,Diodo rectificador (flyback),1,Diodo 1N4007 (1A 1000V) en antiparalelo al ventilador,1N4007,200,200,Didacticas Electronicas / SIGMA,https://www.didacticaselectronicas.com/
+9,Protoboard 830 puntos,1,Protoboard estandar con 830 puntos para montaje del prototipo,PROTO-830,8000,8000,Didacticas Electronicas / SIGMA,https://www.didacticaselectronicas.com/
+10,Cables jumper macho-macho,40,Pack de 40 cables jumper M-M de 20cm,JUMPER-MM-40,5000,5000,Didacticas Electronicas / SIGMA,https://www.didacticaselectronicas.com/
+11,Cables jumper macho-hembra,20,Pack de 20 cables jumper M-H de 20cm para conectar modulos,JUMPER-MH-20,3000,3000,Didacticas Electronicas / SIGMA,https://www.didacticaselectronicas.com/
+12,Resistor 120 ohm 1/4W,2,Terminacion del bus RS-485 (uno en cada extremo del bus),R-120,200,400,Didacticas Electronicas / SIGMA,
+13,Resistor 220 ohm 1/4W,1,Resistencia de gate del MOSFET,R-220,200,200,Didacticas Electronicas / SIGMA,
+14,Resistor 680 ohm 1/4W,2,Polarizacion fail-safe del bus RS-485 (pull-up y pull-down),R-680,200,400,Didacticas Electronicas / SIGMA,
+15,Resistor 10K ohm 1/4W,1,Pull-down del gate del MOSFET para boot seguro,R-10K,200,200,Didacticas Electronicas / SIGMA,
+16,Cable UTP par trenzado,2,2 metros de cable UTP cat5 o similar para el bus RS-485,UTP-2M,2000,2000,Cualquier ferreteria/electronica,
+17,Fuente DC 5V 2A (o USB),1,Alimentacion del sistema. Puede usarse cargador USB 5V de celular,USB-5V-2A,15000,15000,Didacticas Electronicas / SIGMA,
+TOTAL,,,,,,108400,,
