@@ -34,9 +34,9 @@ static uint     dma_rx_chan;
 static volatile uint16_t rx_index = 0;
 static alarm_id_t silence_alarm = 0;
 
-
-// Calculo del CRC16 Modbus (polinomio 0xA001, reflexion seed 0xFFFF)
-
+/* ----------------------------------------------------------------------------
+ *  Calculo del CRC16 Modbus (polinomio 0xA001, reflexion seed 0xFFFF)
+ * --------------------------------------------------------------------------*/
 static uint16_t modbus_crc16(const uint8_t *data, uint16_t len) {
     uint16_t crc = 0xFFFF;
     for (uint16_t i = 0; i < len; i++) {
@@ -49,18 +49,18 @@ static uint16_t modbus_crc16(const uint8_t *data, uint16_t len) {
     return crc;
 }
 
-
-// Callback del timer 3.5char: la trama termino
-
+/* ----------------------------------------------------------------------------
+ *  Callback del timer 3.5char: la trama termino
+ * --------------------------------------------------------------------------*/
 static int64_t on_silence_timeout(alarm_id_t id, void *user_data) {
     (void)id; (void)user_data;
     g_flag_modbus_rx_done = true;
     return 0; /* no reprogramar */
 }
 
-//
-// ISR del UART0: por cada byte recibido, lo guarda y reinicia el timer
-
+/* ----------------------------------------------------------------------------
+ *  ISR del UART0: por cada byte recibido, lo guarda y reinicia el timer
+ * --------------------------------------------------------------------------*/
 static void on_uart0_rx(void) {
     while (uart_is_readable(UART_MODBUS) && rx_index < MODBUS_BUF_LEN) {
         rx_buf[rx_index++] = uart_getc(UART_MODBUS);
@@ -71,9 +71,9 @@ static void on_uart0_rx(void) {
                                     on_silence_timeout, NULL, false);
 }
 
-
-// Inicializacion
-
+/* ----------------------------------------------------------------------------
+ *  Inicializacion
+ * --------------------------------------------------------------------------*/
 void modbus_init(void) {
     /* UART0 a 9600 8N1 */
     uart_init(UART_MODBUS, UART_MODBUS_BAUD);

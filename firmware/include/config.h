@@ -47,7 +47,7 @@
 #define ADC_TEMP_CHANNEL         4          /* Canal interno ADC4           */
 
 //PARAMETROS DEL CONTROL TERMICO
-#define TEMP_THRESHOLD_C         30.0f      /* Por debajo: ventilador OFF   */
+#define TEMP_THRESHOLD_C         20.0f      /* Por debajo: ventilador OFF   */
 #define TEMP_MAX_C               60.0f      /* En este punto: duty = 100%   */
 #define CONTROL_LOOP_HZ          100        /* Frecuencia del lazo cerrado  */
 
@@ -60,13 +60,14 @@
 #define MODBUS_REG_COUNT         8          /* Numero de holding registers  */
 #define MODBUS_TIMEOUT_MS        100        /* Timeout total                */
 #define MODBUS_INTERFRAME_US     4010       /* 3.5 char @ 9600 = 4.01 ms    */
+#define MODBUS_POLL_PERIOD_MS    300        /* Periodo entre peticiones FC03*/
 
 
 //WI-FI / HTTP
 
-#define WIFI_SSID                "MiRedWiFi"           /* Cambiar           */
-#define WIFI_PASSWORD            "miPassword123"       /* Cambiar           */
-#define HTTP_SERVER_IP           "192.168.1.100"       /* IP del servidor   */
+#define WIFI_SSID                "iPhone kiki"
+#define WIFI_PASSWORD            "momentokiki"
+#define HTTP_SERVER_IP           "172.20.10.9"       /* IP del servidor   */
 #define HTTP_SERVER_PORT         8000
 #define HTTP_ENDPOINT            "/api/telemetry/"
 #define HTTP_POST_PERIOD_MS      1000                  /* 1 POST/segundo    */

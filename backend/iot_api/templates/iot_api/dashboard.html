@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IoT Edge Gateway — Dashboard</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0a1628;
+      color: #e0eaff;
+      font-family: 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      border-bottom: 1px solid #1e3a5f;
+      padding-bottom: 16px;
+    }
+
+    header h1 {
+      font-size: 1.4rem;
+      color: #7eb8f7;
+      letter-spacing: 0.5px;
+    }
+
+    header h1 span { color: #ffffff; }
+
+    #status-badge {
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: #1e3a5f;
+      color: #7eb8f7;
+    }
+
+    #status-badge.online { background: #0d3b1e; color: #4ade80; }
+    #status-badge.offline { background: #3b1a0d; color: #f87171; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .card {
+      background: #0f2040;
+      border: 1px solid #1e3a5f;
+      border-radius: 12px;
+      padding: 20px 22px;
+    }
+
+    .card .label {
+      font-size: 0.75rem;
+      color: #7eb8f7;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .card .value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .card .unit {
+      font-size: 0.9rem;
+      color: #7eb8f7;
+      margin-left: 4px;
+    }
+
+    .card .subvalue {
+      font-size: 0.8rem;
+      color: #4a7ab5;
+      margin-top: 6px;
+    }
+
+    /* barra de PWM */
+    .bar-bg {
+      background: #1e3a5f;
+      border-radius: 6px;
+      height: 10px;
+      margin-top: 10px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #7eb8f7);
+      border-radius: 6px;
+      transition: width 0.5s ease;
+    }
+
+    /* tabla de registros Modbus */
+    .section-title {
+      font-size: 0.8rem;
+      color: #7eb8f7;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #0f2040;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #1e3a5f;
+      margin-bottom: 28px;
+    }
+
+    th {
+      background: #1e3a5f;
+      color: #7eb8f7;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 10px 14px;
+      text-align: left;
+    }
+
+    td {
+      padding: 10px 14px;
+      font-size: 0.9rem;
+      border-top: 1px solid #1e3a5f;
+      color: #c8deff;
+    }
+
+    tr:hover td { background: #162c50; }
+
+    /* historial reciente */
+    #history-table td:first-child { color: #4a7ab5; font-size: 0.8rem; }
+
+    footer {
+      text-align: center;
+      font-size: 0.75rem;
+      color: #2a4a70;
+      margin-top: 12px;
+    }
+
+    #last-update { font-size: 0.75rem; color: #2a4a70; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>IoT Edge Gateway &mdash; <span>Dashboard en Vivo</span></h1>
+  <div>
+    <span id="status-badge">Conectando...</span>
+    &nbsp;
+    <span id="last-update"></span>
+  </div>
+</header>
+
+<!-- Tarjetas principales -->
+<div class="grid">
+  <div class="card">
+    <div class="label">Temperatura interna RP2040</div>
+    <div class="value" id="val-temp">--<span class="unit">°C</span></div>
+    <div class="subvalue" id="val-ts">ts: --</div>
+  </div>
+
+  <div class="card">
+    <div class="label">Duty cycle ventilador</div>
+    <div class="value" id="val-duty">--<span class="unit">/ 255</span></div>
+    <div class="bar-bg"><div class="bar-fill" id="bar-duty" style="width:0%"></div></div>
+  </div>
+
+  <div class="card">
+    <div class="label">Errores Modbus</div>
+    <div class="value" id="val-errors">--</div>
+    <div class="subvalue">Timeouts acumulados</div>
+  </div>
+
+  <div class="card">
+    <div class="label">Muestras recibidas</div>
+    <div class="value" id="val-count">--</div>
+    <div class="subvalue">Ultimas 50 cargadas</div>
+  </div>
+</div>
+
+<!-- Registros Modbus -->
+<div class="section-title">Holding Registers Modbus (esclavo 0x01)</div>
+<table id="reg-table">
+  <thead>
+    <tr>
+      <th>Registro</th>
+      <th>Nombre</th>
+      <th>Valor (decimal)</th>
+      <th>Valor (hex)</th>
+    </tr>
+  </thead>
+  <tbody id="reg-body">
+    <tr><td colspan="4" style="color:#2a4a70">Esperando datos...</td></tr>
+  </tbody>
+</table>
+
+<!-- Historial reciente -->
+<div class="section-title">Historial reciente (ultimas 10 muestras)</div>
+<table>
+  <thead>
+    <tr>
+      <th>Recibido</th>
+      <th>Temp (°C)</th>
+      <th>Duty</th>
+      <th>Err Modbus</th>
+      <th>Reg0</th>
+      <th>Reg1</th>
+    </tr>
+  </thead>
+  <tbody id="history-body">
+    <tr><td colspan="6" style="color:#2a4a70">Esperando datos...</td></tr>
+  </tbody>
+</table>
+
+<footer>
+  Digitales 3 &mdash; Universidad de Antioquia &mdash; Brando Enrique Chavez Vergara &mdash; 2026
+</footer>
+
+<script>
+  const REG_NAMES = [
+    'Velocidad motor (rpm)', 'Corriente (mA)', 'Voltaje bus (mV)',
+    'Potencia (mW)', 'Temperatura planta (0.1°C)', 'Estado flags',
+    'Error flags', 'Contador ciclos'
+  ];
+
+  async function fetchData() {
+    try {
+      const res = await fetch('/api/telemetry/latest/');
+      if (!res.ok) throw new Error(res.status);
+      const json = await res.json();
+
+      const badge = document.getElementById('status-badge');
+      badge.textContent = 'ONLINE';
+      badge.className = 'online';
+
+      document.getElementById('last-update').textContent =
+        'Actualizado: ' + new Date().toLocaleTimeString('es-CO');
+
+      if (json.count === 0) return;
+
+      const latest = json.results[0];
+
+      // Tarjetas principales
+      document.getElementById('val-temp').innerHTML =
+        latest.temp_internal.toFixed(1) + '<span class="unit">°C</span>';
+      document.getElementById('val-ts').textContent = 'ts: ' + latest.device_ts_ms + ' ms';
+      document.getElementById('val-duty').innerHTML =
+        latest.pwm_duty + '<span class="unit">/ 255</span>';
+      document.getElementById('bar-duty').style.width =
+        ((latest.pwm_duty / 255) * 100).toFixed(1) + '%';
+      document.getElementById('val-errors').textContent = latest.modbus_errors;
+      document.getElementById('val-count').textContent = json.count;
+
+      // Registros Modbus
+      const regBody = document.getElementById('reg-body');
+      regBody.innerHTML = latest.regs.map((v, i) =>
+        `<tr>
+          <td>HR${i} (0x${i.toString(16).padStart(4,'0')})</td>
+          <td>${REG_NAMES[i]}</td>
+          <td>${v}</td>
+          <td>0x${v.toString(16).toUpperCase().padStart(4,'0')}</td>
+        </tr>`
+      ).join('');
+
+      // Historial
+      const histBody = document.getElementById('history-body');
+      histBody.innerHTML = json.results.slice(0, 10).map(r =>
+        `<tr>
+          <td>${new Date(r.received_at).toLocaleTimeString('es-CO')}</td>
+          <td>${r.temp_internal.toFixed(1)}</td>
+          <td>${r.pwm_duty}</td>
+          <td>${r.modbus_errors}</td>
+          <td>${r.regs[0]}</td>
+          <td>${r.regs[1]}</td>
+        </tr>`
+      ).join('');
+
+    } catch (e) {
+      const badge = document.getElementById('status-badge');
+      badge.textContent = 'SIN DATOS';
+      badge.className = 'offline';
+    }
+  }
+
+  fetchData();
+  setInterval(fetchData, 1000);
+</script>
+
+</body>
+</html>

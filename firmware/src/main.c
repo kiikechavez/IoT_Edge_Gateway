@@ -80,8 +80,27 @@ int main(void) {
         fsm_global_set_event(EV_INIT_OK);
     }
 
+    /* --- Soft-timers para Modbus (poll), OLED (5 Hz) y HTTP (1 Hz) --- */
+    uint32_t t_last_oled = 0;
+    uint32_t t_last_http = 0;
+    uint32_t t_last_modbus = 0;
+
     /* --- Super-loop principal --- */
     while (true) {
+        uint32_t now_ms = to_ms_since_boot(get_absolute_time());
+        if (now_ms - t_last_oled >= 200) {          /* 200 ms = 5 Hz  */
+            t_last_oled = now_ms;
+            g_flag_oled_refresh = true;
+        }
+        if (now_ms - t_last_http >= HTTP_POST_PERIOD_MS) {   /* 1 Hz */
+            t_last_http = now_ms;
+            g_flag_http_due = true;
+        }
+        if (now_ms - t_last_modbus >= MODBUS_POLL_PERIOD_MS) {
+            t_last_modbus = now_ms;
+            modbus_request_holding_regs();   /* Dispara FC03 al esclavo */
+        }
+
         /* 1. Servicio Modbus: se ejecuta solo si la ISR completo una trama */
         if (g_flag_modbus_rx_done) {
             g_flag_modbus_rx_done = false;

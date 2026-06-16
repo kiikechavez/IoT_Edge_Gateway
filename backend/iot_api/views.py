@@ -5,12 +5,18 @@ Autor: Brando Enrique Chavez Vergara
 import json
 import logging
 from django.http import JsonResponse, HttpResponseBadRequest
+from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from .models import TelemetryRecord
 
 logger = logging.getLogger(__name__)
+
+
+def dashboard(request):
+    """Vista GET / — dashboard en vivo con fondo azul oscuro."""
+    return render(request, 'iot_api/dashboard.html')
 
 
 @csrf_exempt
