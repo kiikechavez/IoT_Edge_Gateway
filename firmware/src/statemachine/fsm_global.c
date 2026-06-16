@@ -14,11 +14,14 @@
 static fsm_state_t cur_state;
 static volatile fsm_event_t pending_event;
 static uint8_t   modbus_timeout_count;
+static uint32_t  wifi_lost_at_ms;      /* marca cuando el WiFi se perdio por primera vez */
+#define WIFI_LOST_CONFIRM_MS  3000     /* requiere 3 s continuos de fallo para declarar caida */
 
 void fsm_global_init(void) {
     cur_state            = STATE_INIT;
     pending_event        = EV_NONE;
     modbus_timeout_count = 0;
+    wifi_lost_at_ms      = 0;
 }
 
 fsm_state_t fsm_global_get_state(void) {
@@ -43,12 +46,22 @@ const char *fsm_global_state_name(fsm_state_t s) {
  *  Avanza un paso de la FSM. Llamada desde el super-loop.
  * --------------------------------------------------------------------------*/
 void fsm_global_step(telemetry_t *t) {
-    /* Verificar enlace Wi-Fi cada paso */
+    /* Verificar enlace Wi-Fi con debounce temporal (evita falsos positivos).
+     * Solo declara caida si el link lleva >= WIFI_LOST_CONFIRM_MS ms abajo. */
     bool wifi_up = wifi_manager_is_connected();
     if (!wifi_up && cur_state == STATE_ONLINE) {
-        pending_event = EV_WIFI_LOST;
-    } else if (wifi_up && cur_state == STATE_OFFLINE_LOG) {
-        pending_event = EV_WIFI_RECONNECTED;
+        uint32_t now = to_ms_since_boot(get_absolute_time());
+        if (wifi_lost_at_ms == 0) {
+            wifi_lost_at_ms = now;              /* primera vez que falla */
+        } else if (now - wifi_lost_at_ms >= WIFI_LOST_CONFIRM_MS) {
+            wifi_lost_at_ms = 0;
+            pending_event = EV_WIFI_LOST;
+        }
+    } else {
+        wifi_lost_at_ms = 0;                    /* recuperado: reiniciar timer */
+        if (wifi_up && cur_state == STATE_OFFLINE_LOG) {
+            pending_event = EV_WIFI_RECONNECTED;
+        }
     }
     t->wifi_connected = wifi_up;
 

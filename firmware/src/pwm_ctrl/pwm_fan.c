@@ -10,6 +10,7 @@
 #include "pwm_fan.h"
 #include "config.h"
 
+#include "hardware/gpio.h"
 #include "hardware/pwm.h"
 #include "hardware/clocks.h"
 #include "hardware/irq.h"
@@ -58,14 +59,10 @@ void pwm_fan_set_duty(uint8_t duty) {
 }
 
 uint8_t pwm_fan_compute_duty(float t_celsius) {
-    if (t_celsius < TEMP_THRESHOLD_C) {
-        return 0;     /* Apagado: por debajo del umbral */
-    }
-    if (t_celsius >= TEMP_MAX_C) {
-        return 255;   /* Maximo: por encima del techo */
-    }
-    /* Interpolacion lineal entre THRESHOLD y MAX */
-    float range = TEMP_MAX_C - TEMP_THRESHOLD_C;
-    float norm  = (t_celsius - TEMP_THRESHOLD_C) / range;  /* 0..1 */
-    return (uint8_t)(norm * 255.0f);
+    if (t_celsius < TEMP_THRESHOLD_C) return 0;
+    if (t_celsius >= TEMP_MAX_C)      return 255;
+    /* Minimo 200/255 (~78%) al arrancar para superar la caida de 2V del L298N.
+     * El rango proporcional opera de 200 a 255 segun temperatura. */
+    float norm = (t_celsius - TEMP_THRESHOLD_C) / (TEMP_MAX_C - TEMP_THRESHOLD_C);
+    return (uint8_t)(200.0f + norm * 55.0f);
 }

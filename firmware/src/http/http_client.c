@@ -10,6 +10,7 @@
 #include "config.h"
 
 #include "pico/stdlib.h"
+#include "pico/cyw43_arch.h"
 #include "lwip/tcp.h"
 #include "lwip/dns.h"
 #include "lwip/pbuf.h"
@@ -29,9 +30,9 @@ typedef struct {
     bool            done;
 } http_state_t;
 
-
-// Construye el cuerpo JSON
-
+/* ----------------------------------------------------------------------------
+ *  Construye el cuerpo JSON
+ * --------------------------------------------------------------------------*/
 static int build_json(char *buf, size_t buflen, const telemetry_t *t) {
     return snprintf(buf, buflen,
         "{"
@@ -50,9 +51,9 @@ static int build_json(char *buf, size_t buflen, const telemetry_t *t) {
         t->modbus_errors);
 }
 
-
-// Callback de recepcion de la respuesta del servidor
-
+/* ----------------------------------------------------------------------------
+ *  Callback de recepcion de la respuesta del servidor
+ * --------------------------------------------------------------------------*/
 static err_t http_recv_cb(void *arg, struct tcp_pcb *pcb, struct pbuf *p,
                           err_t err) {
     http_state_t *st = (http_state_t*)arg;
@@ -71,9 +72,9 @@ static err_t http_recv_cb(void *arg, struct tcp_pcb *pcb, struct pbuf *p,
     return ERR_OK;
 }
 
-
-// Envio del POST
-
+/* ----------------------------------------------------------------------------
+ *  Envio del POST
+ * --------------------------------------------------------------------------*/
 bool http_post_telemetry(const telemetry_t *t) {
     char json[JSON_BUF_LEN];
     int json_len = build_json(json, sizeof(json), t);
@@ -112,10 +113,13 @@ bool http_post_telemetry(const telemetry_t *t) {
     tcp_write(state.pcb, state.http_buf, state.http_len, TCP_WRITE_FLAG_COPY);
     tcp_output(state.pcb);
 
-    /* Esperar respuesta no-bloqueante (max 2 s) */
+    /* Esperar respuesta no-bloqueante (max 2 s).
+     * cyw43_arch_poll() es obligatorio para que lwIP procese los paquetes
+     * en modo polling (sin RTOS). Sin esta llamada el TCP nunca avanza. */
     uint32_t t0 = to_ms_since_boot(get_absolute_time());
     while (!state.done && (to_ms_since_boot(get_absolute_time()) - t0) < 2000) {
-        sleep_ms(10);
+        cyw43_arch_poll();
+        sleep_ms(1);
     }
     return state.response_ok;
 }

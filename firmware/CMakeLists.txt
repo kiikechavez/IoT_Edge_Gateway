@@ -9,6 +9,7 @@ add_executable(iot_edge_gateway
     src/modbus/modbus_rtu.c
     src/oled/ssd1306.c
     src/sdcard/sdcard_logger.c
+    src/sdcard/ff_stub.c
     src/wifi/wifi_manager.c
     src/http/http_client.c
     src/statemachine/fsm_global.c

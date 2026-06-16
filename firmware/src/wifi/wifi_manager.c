@@ -37,8 +37,12 @@ bool wifi_manager_init(void) {
 }
 
 bool wifi_manager_is_connected(void) {
-    int s = cyw43_wifi_link_status(&cyw43_state, CYW43_ITF_STA);
-    return (s == CYW43_LINK_UP);
+    /* Usar presencia de IP valida como criterio de conexion.
+     * cyw43_wifi_link_status puede reportar estados no-UP transitorios
+     * incluso cuando el enlace y el DHCP estan activos (ej. hotspot iPhone). */
+    struct netif *nif = netif_default;
+    if (!nif) return false;
+    return !ip4_addr_isany(netif_ip4_addr(nif));
 }
 
 void wifi_manager_update_status(telemetry_t *t) {
